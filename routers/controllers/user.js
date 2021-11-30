@@ -77,23 +77,21 @@ const allUsers = async (req, res) => {
 //edge cassssssse
 const deleteUser = async (req, res) => {
   const { _id } = req.body;
-  userModel.deleteOne({ _id }, function (err) {
-    if (err) return handleError(err);
+  userModel.findById({ _id }).then((result) => {
+    console.log(result);
+    if (result) {
+      userModel.deleteOne({ _id }, function (err) {
+        if (err) return handleError(err);
+      });
+      taskModel.deleteMany({ user: _id }, function (err) {
+        if (err) return handleError(err);
+      });
+
+      res.status(200).json("done");
+    } else {
+      return res.status(404).json("user not found");
+    }
   });
-  taskModel.deleteMany({ user: _id }, function (err) {
-    if (err) return handleError(err);
-  });
-  userModel
-    .find({ _id })
-    .then((result) => {
-      if (!result.length) {
-        return res.status(404).json("user not found");
-      }
-      res.json(result);
-    })
-    .catch((err) => {
-      res.send(err);
-    });
 };
 
 module.exports = { signUp, logIn, allUsers, deleteUser };
