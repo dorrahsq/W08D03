@@ -1,4 +1,6 @@
 const userModel = require("./../../db/models/user");
+const taskModel = require("./../../db/models/task");
+
 require("dotenv").config();
 
 // used to share security information between two parties — a client and a server
@@ -11,7 +13,7 @@ const SALT = Number(process.env.SALT);
 
 const signUp = async (req, res) => {
   const { email, password, role } = req.body;
-  const saveEmail = email.toLowerCase(); 
+  const saveEmail = email.toLowerCase();
   const savePass = await bcrypt.hash(password, SALT);
 
   const newUser = new userModel({
@@ -32,7 +34,7 @@ const signUp = async (req, res) => {
 
 const logIn = (req, res) => {
   const { email, password } = req.body;
-  const saveEmail = email.toLowerCase(); 
+  const saveEmail = email.toLowerCase();
 
   userModel
     .findOne({ email: saveEmail })
@@ -62,4 +64,36 @@ const logIn = (req, res) => {
     });
 };
 
-module.exports = { signUp, logIn };
+const allUsers = async (req, res) => {
+  userModel
+    .find({})
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+//edge cassssssse
+const deleteUser = async (req, res) => {
+  const { _id } = req.body;
+  userModel.deleteOne({ _id }, function (err) {
+    if (err) return handleError(err);
+  });
+  taskModel.deleteMany({ user: _id }, function (err) {
+    if (err) return handleError(err);
+  });
+  userModel
+    .find({ _id })
+    .then((result) => {
+      if (!result.length) {
+        return res.status(404).json("user not found");
+      }
+      res.json(result);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+};
+
+module.exports = { signUp, logIn, allUsers, deleteUser };
