@@ -42,7 +42,7 @@ const getTask = (req, res) => {
     .findById({ _id })
     .then((result) => {
       if (result.isDeleted == true) {
-        return res.json("this task is deleted");
+        return res.json("this task have been deleted");
       }
       res.json(result);
     })
@@ -89,12 +89,39 @@ const updateTask = (req, res) => {
           res.json(result);
         })
         .catch((err) => {
+          //task id not found
           res.send(err);
         });
     }
   });
 };
 
+//delete task
+const deleteTask = (req, res) => {
+  const { _id } = req.body;
+  taskModel.findById({ _id }).then((result) => {
+    if (result.isDeleted == true) {
+      return res.json("this task already have been deleted");
+    } else {
+      taskModel.updateOne(
+        { _id },
+        { $set: { isDeleted: true } },
+        function (err) {
+          if (err) return handleError(err);
+        }
+      );
+      taskModel
+        .find({ _id })
+        .then((result) => {
+          res.json(result);
+        })
+        .catch((err) => {
+          //task id not found
+          res.send(err);
+        });
+    }
+  });
+};
 
 module.exports = {
   getAllTasks,
@@ -102,5 +129,5 @@ module.exports = {
   getTask,
   createTask,
   updateTask,
-
+  deleteTask,
 };
