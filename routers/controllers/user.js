@@ -21,11 +21,19 @@ const signUp = async (req, res) => {
     password: savePass,
     role,
   });
-
+  const found = await userModel.findOne({ email: saveEmail });
+  if (found) {
+    return res.status(204).json("already there");
+  }
   newUser
     .save()
-    .then((result) => {
-      res.status(201).json(result);
+    .then(async (result) => {
+      const payload = {
+        role: result.role,
+        id: result._id,
+      };
+      const token = await jwt.sign(payload, SECRETKEY); //options
+      res.status(200).json({ result, token });
     })
     .catch((err) => {
       res.status(400).json(err);
@@ -34,7 +42,7 @@ const signUp = async (req, res) => {
 
 const logIn = (req, res) => {
   const { email, password } = req.body;
-  const saveEmail = email.toLowerCase();
+  const saveEmail = email; /////// to lower case
 
   userModel
     .findOne({ email: saveEmail })
@@ -46,17 +54,18 @@ const logIn = (req, res) => {
           if (savePass) {
             const payload = {
               role: result.role,
+              id: result._id,
             };
             const token = await jwt.sign(payload, SECRETKEY); //options
             res.status(200).json({ result, token });
           } else {
-            res.status(400).json("invalid email or password");
+            res.status(206).json("invalid email or password");
           }
         } else {
-          res.status(400).json("invalid email or password");
+          res.status(206).json("invalid email or password");
         }
       } else {
-        res.status(404).json("not found");
+        res.status(206).json("not found");
       }
     })
     .catch((err) => {
@@ -76,7 +85,7 @@ const allUsers = async (req, res) => {
 };
 //edge cassssssse
 const deleteUser = async (req, res) => {
-  const { _id } = req.body;
+  const { _id } = req.query;
   userModel.findById({ _id }).then((result) => {
     console.log(result);
     if (result) {
