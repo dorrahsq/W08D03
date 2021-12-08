@@ -22,3 +22,11 @@ Create a new user with a hashed password
 - mongoose
 - bcrypt
 - jsonwebtoken
+
+## ER diagram
+![todos ER drawio](https://user-images.githubusercontent.com/92247950/145240845-acf29ccc-df69-43f7-a224-8267d2d14d2d.png)
+
+
+
+## UML diagram
+![todos UML drawio](https://user-images.githubusercontent.com/92247950/145240882-aa58b709-8e65-4e75-bade-367e5abbb0eb.png)
